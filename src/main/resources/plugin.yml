@@ -1,7 +1,7 @@
 name: Mending-Bows
 main: com.elmakers.mine.bukkit.plugins.MendingBowPlugin
 version: 1.0
-api-version: 1.18
+api-version: 1.17
 website: http://mine.elmakers.com
 author: TheBugWhisperer
 description : A plugin to add mending to infinity bows.
