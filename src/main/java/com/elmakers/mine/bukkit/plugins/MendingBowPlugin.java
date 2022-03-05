@@ -35,6 +35,9 @@ public class MendingBowPlugin extends JavaPlugin implements Listener {
         if (itemlist[1].getType() != Material.ENCHANTED_BOOK) return;
         ItemStack book = itemlist[1];
         EnchantmentStorageMeta bookMeta = (EnchantmentStorageMeta)book.getItemMeta();
+        if (bookMeta == null) {
+            return;
+        }
 
         if (itemlist[0].containsEnchantment(Enchantment.MENDING)) {
             if (bookMeta.hasStoredEnchant(Enchantment.ARROW_INFINITE)) {
