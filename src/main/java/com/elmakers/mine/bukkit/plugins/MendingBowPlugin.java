@@ -1,18 +1,15 @@
 package com.elmakers.mine.bukkit.plugins;
 
+import java.util.Map;
+
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.PrepareAnvilEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import java.util.Map;
 
 public class MendingBowPlugin extends JavaPlugin implements Listener {
 
@@ -20,7 +17,7 @@ public class MendingBowPlugin extends JavaPlugin implements Listener {
     public void onEnable() {
         // Put here anything you want to happen when the server starts
 
-        // Register our join event
+        // Register our events
         getServer().getPluginManager().registerEvents(this, this);
     }
 
@@ -31,11 +28,6 @@ public class MendingBowPlugin extends JavaPlugin implements Listener {
 
     @EventHandler
     public void onAnvilPrepare(PrepareAnvilEvent event) {
-        HumanEntity player = null;
-        for (HumanEntity human : event.getViewers()) {
-            player = human;
-            break;
-        }
         ItemStack[] itemlist = event.getInventory().getContents();
         if (itemlist[0] == null || itemlist[1] == null ) return;
 
