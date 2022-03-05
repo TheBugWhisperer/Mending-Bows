@@ -10,6 +10,7 @@ import org.bukkit.event.inventory.PrepareAnvilEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.Repairable;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class MendingBowPlugin extends JavaPlugin implements Listener {
@@ -80,7 +81,22 @@ public class MendingBowPlugin extends JavaPlugin implements Listener {
 
         // Combine the items if we can
         if (combine) {
-            event.getInventory().setRepairCost(5);
+            // Get and check the bow metadata
+            ItemMeta bowMeta = bow.getItemMeta();
+            if (bowMeta == null) {
+                return;
+            }
+
+            // The bow should be repairable
+            if (!(bowMeta instanceof Repairable)) {
+                return;
+            }
+            Repairable repairableBow = (Repairable)bowMeta;
+
+            // This adds 3 to the repair cost of the bow
+            repairableBow.setRepairCost(repairableBow.getRepairCost() + 3);
+            event.getInventory().setRepairCost(repairableBow.getRepairCost());
+
             ItemStack result = combineItem(bow, bookMeta);
             event.setResult(result);
         }
