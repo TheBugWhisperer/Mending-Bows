@@ -9,6 +9,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.PrepareAnvilEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class MendingBowPlugin extends JavaPlugin implements Listener {
@@ -56,10 +57,31 @@ public class MendingBowPlugin extends JavaPlugin implements Listener {
         }
     }
 
-    private ItemStack combineItem(ItemStack bow,EnchantmentStorageMeta bookMeta){
+    private ItemStack combineItem(ItemStack bow, EnchantmentStorageMeta bookMeta){
         ItemStack result = bow.clone();
+        ItemMeta bowMeta = bow.getItemMeta();
+        if (bowMeta == null) {
+            return result;
+        }
         for (Map.Entry<Enchantment, Integer> entry : bookMeta.getStoredEnchants().entrySet()) {
-            result.addEnchantment(entry.getKey(), entry.getValue());
+            Enchantment enchantment = entry.getKey();
+            int level = entry.getValue();
+            // if this is not mending or infinity, we will first check that it's an ok enchantment to add
+            if (!enchantment.equals(Enchantment.MENDING) && !enchantment.equals(Enchantment.ARROW_INFINITE)) {
+                // If this enchant doesn't apply to bows, skip it
+                if (!enchantment.canEnchantItem(bow)) {
+                    continue;
+                }
+
+                // If there is some other conflicting enchant, skip it
+                // Not sure this really applies to bows for
+                if (bowMeta.hasConflictingEnchant(enchantment)) {
+                    continue;
+                }
+            }
+
+            // Add the enchantment to the bow
+            result.addEnchantment(enchantment, level);
         }
         return result;
     }
