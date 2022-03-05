@@ -29,31 +29,47 @@ public class MendingBowPlugin extends JavaPlugin implements Listener {
 
     @EventHandler
     public void onAnvilPrepare(PrepareAnvilEvent event) {
-        ItemStack[] itemlist = event.getInventory().getContents();
-        if (itemlist[0] == null || itemlist[1] == null ) return;
+        // Get the items in the anvil inventory, first two slots
+        ItemStack[] itemList = event.getInventory().getContents();
+        ItemStack bow = itemList[0];
+        ItemStack book = itemList[1];
 
-        if (itemlist[0].getType() != Material.BOW) return;
-        if (itemlist[1].getType() != Material.ENCHANTED_BOOK) return;
-        ItemStack book = itemlist[1];
+        // If either slot is empty, we are done
+        if (bow == null || book == null ) return;
+
+        // We need a bow in slot 1 and a book in slot 2
+        if (bow.getType() != Material.BOW) return;
+        if (book.getType() != Material.ENCHANTED_BOOK) return;
+
+        // Get the book meta data, make sure it is not empty
         EnchantmentStorageMeta bookMeta = (EnchantmentStorageMeta)book.getItemMeta();
         if (bookMeta == null) {
             return;
         }
 
-        if (itemlist[0].containsEnchantment(Enchantment.MENDING)) {
+        // We can combine the two items if one has mending and the other has infinity
+        boolean combine = false;
+
+        // See if the bow has mending and the book has infinity
+        if (bow.containsEnchantment(Enchantment.MENDING)) {
             if (bookMeta.hasStoredEnchant(Enchantment.ARROW_INFINITE)) {
-                event.getInventory().setRepairCost(5);
-                ItemStack result = combineItem(itemlist[0],bookMeta);
-                event.setResult(result);
+                combine = true;
             }
 
         }
-        if (itemlist[0].containsEnchantment(Enchantment.ARROW_INFINITE)) {
+
+        // See if the bow has infinity and the book has mending
+        if (bow.containsEnchantment(Enchantment.ARROW_INFINITE)) {
             if (bookMeta.hasStoredEnchant(Enchantment.MENDING)) {
-                event.getInventory().setRepairCost(5);
-                ItemStack result = combineItem(itemlist[0],bookMeta);
-                event.setResult(result);
+                combine = true;
             }
+        }
+
+        // Combine the items if we can
+        if (combine) {
+            event.getInventory().setRepairCost(5);
+            ItemStack result = combineItem(bow, bookMeta);
+            event.setResult(result);
         }
     }
 
