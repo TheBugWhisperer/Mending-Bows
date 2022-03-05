@@ -41,6 +41,11 @@ public class MendingBowPlugin extends JavaPlugin implements Listener {
         if (bow.getType() != Material.BOW) return;
         if (book.getType() != Material.ENCHANTED_BOOK) return;
 
+        // If the bow already has mending and infinity we are done
+        if (bow.containsEnchantment(Enchantment.MENDING) && bow.containsEnchantment(Enchantment.ARROW_INFINITE)) {
+            return;
+        }
+
         // Get the book meta data, make sure it is not empty
         EnchantmentStorageMeta bookMeta = (EnchantmentStorageMeta)book.getItemMeta();
         if (bookMeta == null) {
