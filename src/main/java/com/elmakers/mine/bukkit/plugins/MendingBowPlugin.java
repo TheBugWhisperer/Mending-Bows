@@ -47,10 +47,18 @@ public class MendingBowPlugin extends JavaPlugin implements Listener {
         }
 
         // Get the book meta data, make sure it is not empty
-        EnchantmentStorageMeta bookMeta = (EnchantmentStorageMeta)book.getItemMeta();
-        if (bookMeta == null) {
+        ItemMeta bookItemMeta = book.getItemMeta();
+        if (bookItemMeta == null) {
             return;
         }
+        // The book should have book meta, but let's check just in case
+        if (!(bookItemMeta instanceof EnchantmentStorageMeta)) {
+            return;
+        }
+
+        // We are now sure this is book meta, so cast it to that class
+        // This way we can access enchanted book specific methods
+        EnchantmentStorageMeta bookMeta = (EnchantmentStorageMeta)bookItemMeta;
 
         // We can combine the two items if one has mending and the other has infinity
         boolean combine = false;
