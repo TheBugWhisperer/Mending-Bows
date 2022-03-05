@@ -33,40 +33,34 @@ public class MendingBowPlugin extends JavaPlugin implements Listener {
         // Get the items in the anvil inventory, first two slots
         ItemStack[] itemList = event.getInventory().getContents();
         ItemStack bow = itemList[0];
-        ItemStack book = itemList[1];
+        ItemStack bookOrBow = itemList[1];
 
         // If either slot is empty, we are done
-        if (bow == null || book == null ) return;
+        if (bow == null || bookOrBow == null ) return;
 
-        // We need a bow in slot 1 and a book in slot 2
+        // We need a bow in slot 1 and a book or bow in slot 2
         if (bow.getType() != Material.BOW) return;
-        if (book.getType() != Material.ENCHANTED_BOOK) return;
+        if (bookOrBow.getType() != Material.ENCHANTED_BOOK && bookOrBow.getType() != Material.BOW) return;
 
         // If the bow already has mending and infinity we are done
         if (bow.containsEnchantment(Enchantment.MENDING) && bow.containsEnchantment(Enchantment.ARROW_INFINITE)) {
             return;
         }
 
-        // Get the book meta data, make sure it is not empty
-        ItemMeta bookItemMeta = book.getItemMeta();
-        if (bookItemMeta == null) {
-            return;
-        }
-        // The book should have book meta, but let's check just in case
-        if (!(bookItemMeta instanceof EnchantmentStorageMeta)) {
-            return;
-        }
+        // Get the book/bow enchantments
+        Map<Enchantment, Integer> addEnchantments = getEnchantments(bookOrBow.getItemMeta());
 
-        // We are now sure this is book meta, so cast it to that class
-        // This way we can access enchanted book specific methods
-        EnchantmentStorageMeta bookMeta = (EnchantmentStorageMeta)bookItemMeta;
+        // If there are no enchantments on it, we are done
+        if (addEnchantments == null || addEnchantments.isEmpty()) {
+            return;
+        }
 
         // We can combine the two items if one has mending and the other has infinity
         boolean combine = false;
 
         // See if the bow has mending and the book has infinity
         if (bow.containsEnchantment(Enchantment.MENDING)) {
-            if (bookMeta.hasStoredEnchant(Enchantment.ARROW_INFINITE)) {
+            if (addEnchantments.containsKey(Enchantment.ARROW_INFINITE)) {
                 combine = true;
             }
 
@@ -74,7 +68,7 @@ public class MendingBowPlugin extends JavaPlugin implements Listener {
 
         // See if the bow has infinity and the book has mending
         if (bow.containsEnchantment(Enchantment.ARROW_INFINITE)) {
-            if (bookMeta.hasStoredEnchant(Enchantment.MENDING)) {
+            if (addEnchantments.containsKey(Enchantment.MENDING)) {
                 combine = true;
             }
         }
@@ -97,18 +91,33 @@ public class MendingBowPlugin extends JavaPlugin implements Listener {
             repairableBow.setRepairCost(repairableBow.getRepairCost() + 3);
             event.getInventory().setRepairCost(repairableBow.getRepairCost());
 
-            ItemStack result = combineItem(bow, bookMeta);
+            ItemStack result = combineItem(bow, addEnchantments);
             event.setResult(result);
         }
     }
 
-    private ItemStack combineItem(ItemStack bow, EnchantmentStorageMeta bookMeta){
+    private Map<Enchantment, Integer> getEnchantments(ItemMeta itemMeta) {
+        // If this is empty, it has no enchantments
+        if (itemMeta == null) {
+            return null;
+        }
+
+        // If this an enchanted book, it has a special kind of meta data
+        if (itemMeta instanceof EnchantmentStorageMeta) {
+            EnchantmentStorageMeta bookMeta = (EnchantmentStorageMeta)itemMeta;
+            return bookMeta.getStoredEnchants();
+        }
+
+        return itemMeta.getEnchants();
+    }
+
+    private ItemStack combineItem(ItemStack bow, Map<Enchantment, Integer> enchantments) {
         ItemStack result = bow.clone();
         ItemMeta bowMeta = bow.getItemMeta();
         if (bowMeta == null) {
             return result;
         }
-        for (Map.Entry<Enchantment, Integer> entry : bookMeta.getStoredEnchants().entrySet()) {
+        for (Map.Entry<Enchantment, Integer> entry : enchantments.entrySet()) {
             Enchantment enchantment = entry.getKey();
             int level = entry.getValue();
             // if this is not mending or infinity, we will first check that it's an ok enchantment to add
